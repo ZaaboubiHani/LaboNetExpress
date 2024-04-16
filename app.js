@@ -20,6 +20,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("tiny"));
 
+// Import Routes
+const userRoutes = require("./routes/userRoutes");
+
+// Add Routes
+
+app.use("/users", userRoutes);
 
 // Handle 404 errors
 app.use((req, res, next) => {
