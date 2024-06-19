@@ -7,11 +7,24 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    name: {
+    fullname: {
       type: String,
       required: true,
     },
-    phoneNumber: {
+    phoneNumber1: {
+      type: String,
+      required: true,
+    },
+    phoneNumber2: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    wilaya: {
+      type: String,
+      required: true,
+    },
+    commune: {
       type: String,
       required: true,
     },
@@ -27,6 +40,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
       default: null,
+    },
+    coordinates: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    type: {
+      type: String,
+      enum: ["laboratory", "supplier"],
+      required: true,
     },
     passwordHash: {
       type: String,
