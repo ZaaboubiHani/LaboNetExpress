@@ -24,6 +24,48 @@ const registerUser = async (req, res) => {
       });
     }
 
+    if (!userData.fullname) {
+      return res.status(400).json({
+        success: false,
+        message: "Veuillez entrer votre nom et prénom",
+      });
+    }
+
+    if (!userData.email) {
+      return res.status(400).json({
+        success: false,
+        message: "Veuillez entrer votre e-mail",
+      });
+    }
+
+    if (!userData.phoneNumber1) {
+      return res.status(400).json({
+        success: false,
+        message: "Veuillez entrer votre numéro de téléphone",
+      });
+    }
+
+    if (!userData.wilaya) {
+      return res.status(400).json({
+        success: false,
+        message: "Veuillez entrer votre wilaya",
+      });
+    }
+
+    if (!userData.commune) {
+      return res.status(400).json({
+        success: false,
+        message: "Veuillez entrer votre commune",
+      });
+    }
+
+    if (!userData.type) {
+      return res.status(400).json({
+        success: false,
+        message: "Veuillez entrer votre type",
+      });
+    }
+
     user = new User({
       ...userData,
       passwordHash: bcrypt.hashSync(password, 10),
@@ -130,6 +172,7 @@ const updateUser = async (req, res) => {
     console.log(error);
   }
 };
+
 const getMe = async (req, res) => {
   try {
     const userId = req.user.userId;
