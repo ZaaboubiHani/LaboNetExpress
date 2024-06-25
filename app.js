@@ -22,10 +22,12 @@ app.use(morgan("tiny"));
 
 // Import Routes
 const userRoutes = require("./routes/userRoutes");
+const productRoutes = require("./routes/productRoutes");
 
 // Add Routes
 
 app.use("/users", userRoutes);
+app.use("/products", productRoutes);
 
 // Handle 404 errors
 app.use((req, res, next) => {
