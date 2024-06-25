@@ -41,11 +41,10 @@ const getProducts = async (req, res) => {
             // Perform a case-insensitive search by name and exclude products created by the requesting user
             products = await Product.find({ 
                 name: { $regex: new RegExp(name, "i") },
-                userId: { $ne: userId }
             });
         } else {
             // If no name is provided, return all products except those created by the requesting user
-            products = await Product.find({ userId: { $ne: userId } });
+            products = await Product.find({});
         }
 
         res.status(200).json(products);
