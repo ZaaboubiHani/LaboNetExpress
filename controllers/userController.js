@@ -1,6 +1,18 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const generateToken = require("../middlewares/jwtMiddleware");
+const twilio = require("twilio");
+const formatPhoneNumber = (phoneNumber) => {
+  if (phoneNumber.startsWith("0")) {
+    return `+213${phoneNumber.slice(1)}`;
+  }
+  return phoneNumber;
+};
+// Twilio configuration
+const accountSid = "AC03a178cc5d3427a833ccc605a6b4d8b5";
+const authToken = "4ab309b502fd7eb3930ec46e21119fef";
+const serviceId = "VA8d0ac0d98a26fa8590c92dea7f48b9af";
+const client = new twilio(accountSid, authToken);
 
 const registerUser = async (req, res) => {
   try {
@@ -69,6 +81,7 @@ const registerUser = async (req, res) => {
     user = new User({
       ...userData,
       passwordHash: bcrypt.hashSync(password, 10),
+      isValidated: false,
     });
 
     user = await user.save();
@@ -79,13 +92,104 @@ const registerUser = async (req, res) => {
         message: "L'utilisateur ne peut pas être créé",
       });
     }
-    res
-      .status(200)
-      .json({ success: true, message: "Utilisateur enregistré avec succès" });
+
+    // Send verification code via Twilio Verify
+    client.verify.v2
+      .services(serviceId)
+      .verifications.create({
+        to: formatPhoneNumber(userData.phoneNumber1),
+        channel: "sms",
+      })
+      .then((verification) => {
+        console.log(`Verification code sent: ${verification.sid}`);
+        res.status(200).json({
+          success: true,
+          message:
+            "Utilisateur enregistré avec succès. Un code de validation a été envoyé à votre numéro de téléphone.",
+        });
+      })
+      .catch((err) => {
+        console.error(`Failed to send verification code: ${err}`);
+        res.status(500).json({
+          success: false,
+          message:
+            "Une erreur s'est produite lors de l'envoi du code de validation.",
+        });
+      });
   } catch (error) {
     res.status(500).json({ success: false, error: error });
   }
 };
+
+const sendCode = async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+    client.verify.v2
+      .services(serviceId)
+      .verifications.create({
+        to: formatPhoneNumber(phoneNumber),
+        channel: "sms",
+      })
+      .then((verification) => {
+        console.log(`Verification code sent: ${verification.sid}`);
+        res.status(200).json({
+          success: true,
+          message:
+            "Utilisateur enregistré avec succès. Un code de validation a été envoyé à votre numéro de téléphone.",
+        });
+      })
+      .catch((err) => {
+        console.error(`Failed to send verification code: ${err}`);
+        res.status(500).json({
+          success: false,
+          message:
+            "Une erreur s'est produite lors de l'envoi du code de validation.",
+        });
+      });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error });
+  }
+};
+
+const validateUser = async (req, res) => {
+  try {
+    const { phoneNumber, code } = req.body;
+
+    const verificationCheck = await client.verify.v2
+      .services(serviceId)
+      .verificationChecks.create({
+        to: formatPhoneNumber(phoneNumber),
+        code: code,
+      });
+
+    if (verificationCheck.status === "approved") {
+      const user = await User.findOne({ phoneNumber1: phoneNumber });
+
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: "Utilisateur non trouvé",
+        });
+      }
+
+      user.isValidated = true;
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Code de validation approuvé. Compte activé.",
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "Code de validation incorrect",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: error });
+  }
+};
+
 const loginUser = async (req, res) => {
   try {
     const user = await User.findOne({
@@ -129,39 +233,49 @@ const loginUser = async (req, res) => {
     console.log(error);
   }
 };
-
 const updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const isAdmin = req.user.isAdmin;
+
     if (!userId) {
       return res.status(400).json({
         success: false,
         message: "Identifiant utilisateur manquant",
       });
     }
-    if (!isAdmin && req.body.isValidated) {
+    if (req.body.isValidated) {
       return res.status(401).json({ success: false, message: "non autorisé" });
     }
     let userData = {
+      image: req.body.image,
       email: req.body.email,
       name: req.body.name,
-      phoneNumber: req.body.phoneNumber,
+      phoneNumber1: req.body.phoneNumber1,
+      phoneNumber2: req.body.phoneNumber2,
+      wilaya: req.body.wilaya,
+      commune: req.body.commune,
+      coordinates: req.body.coordinates,
       deviceToken: req.body.deviceToken,
       isValidated: req.body.isValidated,
     };
     if (req.body.password) {
       userData.passwordHash = await bcrypt.hash(req.body.password, 10);
     }
-    const user = await User.findByIdAndUpdate(userId, userData, { new: true });
+
+    const user = await User.findByIdAndUpdate(userId, userData, { new: true })
+      .select("-passwordHash") // Exclude passwordHash field
+      .populate("image"); // Populate image field
+
     if (!user) {
       return res
         .status(400)
         .json({ success: false, message: "Utilisateur N'existe Pas" });
     }
+
     res.status(200).json({
       success: true,
       message: "Utilisateur mis à jour avec succès",
+      data: user,
     });
   } catch (error) {
     res
@@ -176,7 +290,9 @@ const updateUser = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const user = await User.findById(userId).select("-passwordHash");
+    const user = await User.findById(userId)
+      .select("-passwordHash")
+      .populate("image");
     if (!user) {
       return res
         .status(400)
@@ -239,4 +355,6 @@ module.exports = {
   updateUser,
   getMe,
   getUsers,
+  validateUser,
+  sendCode,
 };
