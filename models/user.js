@@ -55,6 +55,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    image: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "File",
+      required: false,
+      default: null,
+    },
   },
   { timestamps: true, versionKey: false }
 );

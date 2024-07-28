@@ -23,12 +23,14 @@ app.use(morgan("tiny"));
 // Import Routes
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
+const fileRoutes = require("./routes/fileRoutes");
 
 // Add Routes
 
 app.use("/users", userRoutes);
 app.use("/products", productRoutes);
-
+app.use("/file", fileRoutes);
+app.use("/uploads", express.static("uploads"));
 // Handle 404 errors
 app.use((req, res, next) => {
     res.status(404).json({ message: "Route not found" });
