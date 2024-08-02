@@ -7,4 +7,6 @@ const userJwt = require("../middlewares/userJwt");
 router.post("/", userJwt ,productController.createProduct);
 router.get("/", userJwt ,productController.getProducts);
 router.delete("/:id", userJwt ,productController.deleteProduct);
+router.put("/:id", userJwt, productController.updateProduct); 
+
 module.exports = router;
