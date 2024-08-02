@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const mongoose = require("mongoose");
+
 const createProduct = async (req, res) => {
   try {
     if (!req.body.name) {
@@ -90,8 +91,37 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const updateProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const product = await Product.findOne({ _id: productId });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Product not found or you do not have permission to update this product",
+      });
+    }
+
+    // Update the product with the new data
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      { ...req.body },
+      { new: true }
+    ).populate("image");
+
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Error updating Product" });
+  }
+};
+
 module.exports = {
   createProduct,
   getProducts,
   deleteProduct,
+  updateProduct,
 };
