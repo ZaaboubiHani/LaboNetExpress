@@ -47,8 +47,10 @@ const getProducts = async (req, res) => {
 
     // Add name condition if provided
     if (name) {
-      query.name = { $regex: new RegExp(name, "i") };
-      query.brand = { $regex: new RegExp(name, "i") };
+      query.$or = [
+        { name: { $regex: new RegExp(name, "i") } },
+        { brand: { $regex: new RegExp(name, "i") } }
+      ];
     }
 
     // Add user condition if provided
