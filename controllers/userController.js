@@ -92,30 +92,33 @@ const registerUser = async (req, res) => {
         message: "L'utilisateur ne peut pas être créé",
       });
     }
-
-    // Send verification code via Twilio Verify
-    client.verify.v2
-      .services(serviceId)
-      .verifications.create({
-        to: formatPhoneNumber(userData.phoneNumber1),
-        channel: "sms",
-      })
-      .then((verification) => {
-        console.log(`Verification code sent: ${verification.sid}`);
-        res.status(200).json({
-          success: true,
-          message:
-            "Utilisateur enregistré avec succès. Un code de validation a été envoyé à votre numéro de téléphone.",
-        });
-      })
-      .catch((err) => {
-        console.error(`Failed to send verification code: ${err}`);
-        res.status(500).json({
-          success: false,
-          message:
-            "Une erreur s'est produite lors de l'envoi du code de validation.",
-        });
-      });
+    res.status(200).json({
+      success: true,
+      message: "Utilisateur créé avec succès",
+    });
+    // // Send verification code via Twilio Verify
+    // client.verify.v2
+    //   .services(serviceId)
+    //   .verifications.create({
+    //     to: formatPhoneNumber(userData.phoneNumber1),
+    //     channel: "sms",
+    //   })
+    //   .then((verification) => {
+    //     console.log(`Verification code sent: ${verification.sid}`);
+    //     res.status(200).json({
+    //       success: true,
+    //       message:
+    //         "Utilisateur enregistré avec succès. Un code de validation a été envoyé à votre numéro de téléphone.",
+    //     });
+    //   })
+    //   .catch((err) => {
+    //     console.error(`Failed to send verification code: ${err}`);
+    //     res.status(500).json({
+    //       success: false,
+    //       message:
+    //         "Une erreur s'est produite lors de l'envoi du code de validation.",
+    //     });
+    //   });
   } catch (error) {
     res.status(500).json({ success: false, error: error });
   }

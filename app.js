@@ -23,12 +23,16 @@ app.use(morgan("tiny"));
 // Import Routes
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
+const commentRoutes = require("./routes/commentRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 const fileRoutes = require("./routes/fileRoutes");
 
 // Add Routes
 
 app.use("/users", userRoutes);
 app.use("/products", productRoutes);
+app.use("/comments", commentRoutes);
+app.use("/orders", orderRoutes);
 app.use("/file", fileRoutes);
 app.use("/uploads", express.static("uploads"));
 // Handle 404 errors

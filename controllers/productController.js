@@ -23,12 +23,7 @@ const createProduct = async (req, res) => {
 
     const createdProduct = await newProduct.save();
 
-    // Find the product again and populate the 'image' field
-    const populatedProduct = await Product.findById(
-      createdProduct._id
-    ).populate("image");
-
-    res.status(201).json(populatedProduct);
+    res.status(201).json(createdProduct);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Error creating Product" });
@@ -49,7 +44,7 @@ const getProducts = async (req, res) => {
     if (name) {
       query.$or = [
         { name: { $regex: new RegExp(name, "i") } },
-        { brand: { $regex: new RegExp(name, "i") } }
+        { brand: { $regex: new RegExp(name, "i") } },
       ];
     }
 
@@ -60,7 +55,6 @@ const getProducts = async (req, res) => {
 
     // Find products based on the query and paginate the results
     const products = await Product.find(query)
-      .populate("image")
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -126,7 +120,7 @@ const updateProduct = async (req, res) => {
       productId,
       { ...req.body },
       { new: true }
-    ).populate("image");
+    );
 
     res.status(200).json(updatedProduct);
   } catch (error) {

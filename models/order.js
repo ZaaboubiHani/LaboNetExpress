@@ -2,39 +2,32 @@ const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate-v2");
 const mongooseAutopopulate = require("mongoose-autopopulate");
 
-const productSchema = new mongoose.Schema(
+const orderSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    price: {
+    amount: {
       type: Number,
       required: true,
     },
-    brand: {
+    type: {
       type: String,
+      enum: ["sent", "accepted","rejected","canceled"],
       required: true,
-    },
-    description: {
-      type: String,
-      required: false,
-      default: null,
+      default: "sent",
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    image: {
+    product: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "File",
+      ref: "Product",
       autopopulate: true,
     },
   },
   { timestamps: true, versionKey: false }
 );
-productSchema.plugin(mongoosePaginate);
-productSchema.plugin(mongooseAutopopulate);
-const Product = mongoose.model("Product", productSchema);
+orderSchema.plugin(mongoosePaginate);
+orderSchema.plugin(mongooseAutopopulate);
+const Order = mongoose.model("Order", orderSchema);
 
-module.exports = Product;
+module.exports = Order;

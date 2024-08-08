@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate-v2");
+const mongooseAutopopulate = require("mongoose-autopopulate");
+
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -60,11 +62,13 @@ const userSchema = new mongoose.Schema(
       ref: "File",
       required: false,
       default: null,
+      autopopulate: true,
     },
   },
   { timestamps: true, versionKey: false }
 );
 userSchema.plugin(mongoosePaginate);
+userSchema.plugin(mongooseAutopopulate);
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;
